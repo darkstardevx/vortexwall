@@ -62,3 +62,68 @@ pub fn load(path: &std::path::Path) -> Result<AppConfig, String> {
         .map_err(|e| format!("failed to read {}: {}", path.display(), e))?;
     toml::from_str(&raw).map_err(|e| format!("failed to parse {}: {}", path.display(), e))
 }
+
+/// Fail fast on config problems that would otherwise silently do nothing
+/// at runtime, with no error or warning anywhere. `threshold: 0` is the
+/// real trap: `FailureTracker::record` always pushes a failure before
+/// checking `entry.len() == self.threshold`, so `entry.len()` is never
+/// `0` after a call -- `threshold = 0` doesn't ban on every failure, it
+/// silently never bans anything at all. `window_secs`/`ban_secs` of `0`
+/// are the equivalent silent no-ops (a window that closes instantly
+/// never accumulates failures; a ban that expires instantly is never
+/// really a ban).
+pub fn validate(cfg: &AppConfig) -> Result<(), String> {
+    if cfg.threshold == 0 {
+        return Err("threshold must be at least 1 (0 silently never bans anything)".to_string());
+    }
+    if cfg.window_secs == 0 {
+        return Err(
+            "window_secs must be at least 1 (0 silently never accumulates failures)".to_string(),
+        );
+    }
+    if cfg.ban_secs == 0 {
+        return Err("ban_secs must be at least 1 (0 silently expires a ban instantly)".to_string());
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn valid_config() -> AppConfig {
+        AppConfig {
+            threshold: 5,
+            window_secs: 600,
+            ban_secs: 3600,
+            allowlist: vec![],
+            watch: default_watch(),
+        }
+    }
+
+    #[test]
+    fn validate_accepts_a_normal_config() {
+        assert!(validate(&valid_config()).is_ok());
+    }
+
+    #[test]
+    fn validate_rejects_zero_threshold() {
+        let mut cfg = valid_config();
+        cfg.threshold = 0;
+        assert!(validate(&cfg).is_err());
+    }
+
+    #[test]
+    fn validate_rejects_zero_window_secs() {
+        let mut cfg = valid_config();
+        cfg.window_secs = 0;
+        assert!(validate(&cfg).is_err());
+    }
+
+    #[test]
+    fn validate_rejects_zero_ban_secs() {
+        let mut cfg = valid_config();
+        cfg.ban_secs = 0;
+        assert!(validate(&cfg).is_err());
+    }
+}

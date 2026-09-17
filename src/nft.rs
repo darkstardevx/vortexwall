@@ -119,3 +119,16 @@ fn stderr_of(output: &Output) -> String {
 fn nft_error(what: &str, output: &Output) -> io::Error {
     io::Error::other(format!("nft failed on `{}`: {}", what, stderr_of(output)))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn set_name_picks_the_matching_family() {
+        let v4: IpAddr = "198.51.100.7".parse().unwrap();
+        let v6: IpAddr = "2001:db8::1".parse().unwrap();
+        assert_eq!(set_name(&v4), "blackhole");
+        assert_eq!(set_name(&v6), "blackhole6");
+    }
+}

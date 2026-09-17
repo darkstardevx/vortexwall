@@ -64,18 +64,32 @@ struct Args {
     test_ban: Option<String>,
 }
 
-fn run_admin(args: &Args) -> std::io::Result<i32> {
-    let action = match (args.start, args.stop, args.restart, args.status) {
-        (true, false, false, false) => "start",
-        (false, true, false, false) => "stop",
-        (false, false, true, false) => "restart",
-        (false, false, false, true) => "status",
+/// Exactly one of `start`/`stop`/`restart`/`status` must be set. Split out
+/// from `run_admin` so this selection logic is testable without touching
+/// `Command`/process spawning.
+fn resolve_admin_action(
+    start: bool,
+    stop: bool,
+    restart: bool,
+    status: bool,
+) -> Result<&'static str, &'static str> {
+    match (start, stop, restart, status) {
+        (true, false, false, false) => Ok("start"),
+        (false, true, false, false) => Ok("stop"),
+        (false, false, true, false) => Ok("restart"),
+        (false, false, false, true) => Ok("status"),
         (false, false, false, false) => {
-            eprintln!("--admin needs exactly one of --start, --stop, --restart, --status");
-            return Ok(1);
+            Err("--admin needs exactly one of --start, --stop, --restart, --status")
         }
-        _ => {
-            eprintln!("--admin takes exactly one of --start, --stop, --restart, --status, not several at once");
+        _ => Err("--admin takes exactly one of --start, --stop, --restart, --status, not several at once"),
+    }
+}
+
+fn run_admin(args: &Args) -> std::io::Result<i32> {
+    let action = match resolve_admin_action(args.start, args.stop, args.restart, args.status) {
+        Ok(action) => action,
+        Err(msg) => {
+            eprintln!("{msg}");
             return Ok(1);
         }
     };
@@ -154,6 +168,13 @@ async fn run_daemon(args: Args) -> std::io::Result<()> {
             }
         }
     };
+
+    config::validate(&cfg).map_err(|e| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Config error: {e}"),
+        )
+    })?;
 
     println!(
         "[Configuration] threshold={} window={}s ban_duration={}s dry_run={} watching={:?}",
@@ -333,5 +354,30 @@ async fn main() -> ExitCode {
             eprintln!("[Critical Failure] {e}");
             ExitCode::FAILURE
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolve_admin_action_maps_each_single_flag() {
+        assert_eq!(resolve_admin_action(true, false, false, false), Ok("start"));
+        assert_eq!(resolve_admin_action(false, true, false, false), Ok("stop"));
+        assert_eq!(
+            resolve_admin_action(false, false, true, false),
+            Ok("restart")
+        );
+        assert_eq!(
+            resolve_admin_action(false, false, false, true),
+            Ok("status")
+        );
+    }
+
+    #[test]
+    fn resolve_admin_action_rejects_no_flags_and_multiple_flags() {
+        assert!(resolve_admin_action(false, false, false, false).is_err());
+        assert!(resolve_admin_action(true, true, false, false).is_err());
     }
 }

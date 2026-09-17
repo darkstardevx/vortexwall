@@ -3,6 +3,8 @@ name = "vortexwall"
 version = "0.1.0"
 edition = "2021"
 description = "Watches auth logs and actively blackholes offending IPs via nftables"
+authors = ["darkstardevx <darkstardevx@gmail.com>"]
+license = "MIT"
 
 [dependencies]
 tokio = { version = "1.38", features = ["full"] }
