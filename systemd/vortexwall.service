@@ -1,0 +1,47 @@
+[Unit]
+Description=VortexWall — active-blackholing firewall (starts in --dry-run; edit ExecStart to enable real bans)
+Documentation=https://github.com/darkstardevx/vortexwall
+After=network.target sshd.service
+
+[Service]
+Type=simple
+User=raven
+Group=raven
+# Read access to the system journal (journalctl -f -u sshd) without
+# running as root -- the default ACL on /var/log/journal grants this
+# to the systemd-journal group, same as ghostport-firewall's own unit.
+SupplementaryGroups=systemd-journal
+AmbientCapabilities=CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_ADMIN
+WorkingDirectory=/home/raven/tools/daemons/vortexwall
+ExecStart=/home/raven/.cargo-target/release/vortexwall --dry-run
+Restart=on-failure
+RestartSec=5
+
+# Sandboxing. Real runtime footprint: reads its own optional
+# config.toml under $HOME (ProtectHome=read-only), reads the system
+# journal (systemd-journal group above), and shells out to `nft`
+# (needs the CAP_NET_ADMIN already granted above). No networking of
+# its own -- no AF_INET/AF_INET6 needed, unlike wraithflow -- and it
+# never touches ssh itself (only reads sshd's *log output*), so the
+# firejail-wrapped-ssh conflict that gutted most of ApexDaemon's
+# hardening on this host doesn't apply here.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+# AF_NETLINK is load-bearing: `nft`'s own netlink socket calls run
+# under this unit's seccomp filter (inherited across execve), not just
+# vortexwall's own -- excluding it would silently break every nft
+# invocation this whole tool exists to make. Same lesson
+# ghostport-firewall's own unit already learned the hard way.
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+MemoryDenyWriteExecute=true
+LockPersonality=true
+RestrictRealtime=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target
