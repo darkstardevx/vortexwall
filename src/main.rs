@@ -11,7 +11,11 @@ use tokio::process::Command as TokioCommand;
 use tokio::sync::mpsc;
 
 #[derive(Parser, Debug)]
-#[command(name = "vortexwall", version = "0.1.0", about = "Watches auth logs and actively blackholes offending IPs via nftables")]
+#[command(
+    name = "vortexwall",
+    version = "0.1.0",
+    about = "Watches auth logs and actively blackholes offending IPs via nftables"
+)]
 struct Args {
     /// Path to config.toml. Defaults to $XDG_CONFIG_HOME/vortexwall/config.toml,
     /// then ~/.config/vortexwall/config.toml, then ./config.toml.
@@ -135,7 +139,8 @@ async fn run_daemon(args: Args) -> std::io::Result<()> {
     });
 
     let cfg = match config_path {
-        Ok(path) => config::load(&path).map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?,
+        Ok(path) => config::load(&path)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?,
         Err(_) => {
             println!("[Configuration] No config file found — running with built-in defaults");
             config::AppConfig {
@@ -143,7 +148,9 @@ async fn run_daemon(args: Args) -> std::io::Result<()> {
                 window_secs: 600,
                 ban_secs: 3600,
                 allowlist: vec![],
-                watch: vec![config::WatchConfig { service: "sshd".to_string() }],
+                watch: vec![config::WatchConfig {
+                    service: "sshd".to_string(),
+                }],
             }
         }
     };
@@ -164,7 +171,11 @@ async fn run_daemon(args: Args) -> std::io::Result<()> {
         println!("[nftables] table ready (inet vortexwall)");
     }
 
-    let allowlist: Vec<IpAddr> = cfg.allowlist.iter().filter_map(|s| s.parse().ok()).collect();
+    let allowlist: Vec<IpAddr> = cfg
+        .allowlist
+        .iter()
+        .filter_map(|s| s.parse().ok())
+        .collect();
     if allowlist.len() != cfg.allowlist.len() {
         eprintln!("[Configuration] warning: some allowlist entries didn't parse as plain IPs (CIDR ranges aren't supported yet) and were ignored");
     }
@@ -175,7 +186,8 @@ async fn run_daemon(args: Args) -> std::io::Result<()> {
     }
     drop(tx); // the loop below exits if all watchers die AND drop their senders
 
-    let mut tracker = detector::FailureTracker::new(Duration::from_secs(cfg.window_secs), cfg.threshold);
+    let mut tracker =
+        detector::FailureTracker::new(Duration::from_secs(cfg.window_secs), cfg.threshold);
     let ban_duration = Duration::from_secs(cfg.ban_secs);
 
     while let Some(ip) = rx.recv().await {
@@ -192,10 +204,16 @@ async fn run_daemon(args: Args) -> std::io::Result<()> {
 
         if tracker.record(ip, Instant::now()) {
             if args.dry_run {
-                println!("[DRY-RUN] would ban {ip} for {}s (threshold {} reached)", cfg.ban_secs, cfg.threshold);
+                println!(
+                    "[DRY-RUN] would ban {ip} for {}s (threshold {} reached)",
+                    cfg.ban_secs, cfg.threshold
+                );
             } else {
                 match nft::ban(ip, ban_duration) {
-                    Ok(()) => println!("[BANNED] {ip} for {}s (threshold {} reached)", cfg.ban_secs, cfg.threshold),
+                    Ok(()) => println!(
+                        "[BANNED] {ip} for {}s (threshold {} reached)",
+                        cfg.ban_secs, cfg.threshold
+                    ),
                     Err(e) => eprintln!("[ERROR] failed to ban {ip}: {e}"),
                 }
             }

@@ -40,7 +40,9 @@ pub struct AppConfig {
 }
 
 fn default_watch() -> Vec<WatchConfig> {
-    vec![WatchConfig { service: "sshd".to_string() }]
+    vec![WatchConfig {
+        service: "sshd".to_string(),
+    }]
 }
 
 pub fn default_config_path() -> Option<PathBuf> {
@@ -48,11 +50,15 @@ pub fn default_config_path() -> Option<PathBuf> {
         .map(PathBuf::from)
         .or_else(|_| std::env::var("HOME").map(|h| PathBuf::from(h).join(".config")))
         .ok()?;
-    let candidates = [config_home.join("vortexwall").join("config.toml"), PathBuf::from("config.toml")];
+    let candidates = [
+        config_home.join("vortexwall").join("config.toml"),
+        PathBuf::from("config.toml"),
+    ];
     candidates.into_iter().find(|p| p.exists())
 }
 
 pub fn load(path: &std::path::Path) -> Result<AppConfig, String> {
-    let raw = std::fs::read_to_string(path).map_err(|e| format!("failed to read {}: {}", path.display(), e))?;
+    let raw = std::fs::read_to_string(path)
+        .map_err(|e| format!("failed to read {}: {}", path.display(), e))?;
     toml::from_str(&raw).map_err(|e| format!("failed to parse {}: {}", path.display(), e))
 }

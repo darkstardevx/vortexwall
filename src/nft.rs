@@ -35,7 +35,10 @@ add rule {table} drop_blackholed ip6 saddr @blackhole6 drop
 /// Removes the entire table — every rule, every currently-banned IP, gone.
 /// Not an error if it doesn't exist (nothing to tear down).
 pub fn teardown() -> io::Result<()> {
-    let output = Command::new("nft").args(["delete", "table"]).args(TABLE.split_whitespace()).output()?;
+    let output = Command::new("nft")
+        .args(["delete", "table"])
+        .args(TABLE.split_whitespace())
+        .output()?;
     if output.status.success() || stderr_of(&output).contains("No such file or directory") {
         Ok(())
     } else {
@@ -60,7 +63,11 @@ pub fn ban(ip: IpAddr, duration: Duration) -> io::Result<()> {
 }
 
 pub fn unban(ip: IpAddr) -> io::Result<()> {
-    run_script(&format!("delete element {table} {set} {{ {ip} }}", table = TABLE, set = set_name(&ip)))
+    run_script(&format!(
+        "delete element {table} {set} {{ {ip} }}",
+        table = TABLE,
+        set = set_name(&ip)
+    ))
 }
 
 /// Every currently-banned IP, parsed from `nft`'s plain-text set listing.
@@ -69,7 +76,11 @@ pub fn unban(ip: IpAddr) -> io::Result<()> {
 pub fn list_banned() -> io::Result<Vec<IpAddr>> {
     let mut ips = Vec::new();
     for set in ["blackhole", "blackhole6"] {
-        let output = Command::new("nft").args(["list", "set"]).args(TABLE.split_whitespace()).arg(set).output()?;
+        let output = Command::new("nft")
+            .args(["list", "set"])
+            .args(TABLE.split_whitespace())
+            .arg(set)
+            .output()?;
         if !output.status.success() {
             continue; // table/set not set up yet — treat as empty, not an error
         }
@@ -106,5 +117,5 @@ fn stderr_of(output: &Output) -> String {
 }
 
 fn nft_error(what: &str, output: &Output) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, format!("nft failed on `{}`: {}", what, stderr_of(output)))
+    io::Error::other(format!("nft failed on `{}`: {}", what, stderr_of(output)))
 }

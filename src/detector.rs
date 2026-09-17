@@ -67,7 +67,11 @@ pub struct FailureTracker {
 
 impl FailureTracker {
     pub fn new(window: Duration, threshold: usize) -> Self {
-        Self { window, threshold, history: HashMap::new() }
+        Self {
+            window,
+            threshold,
+            history: HashMap::new(),
+        }
     }
 
     /// Record one failure for `ip` at `now`. Returns `true` exactly once
@@ -101,7 +105,10 @@ mod tests {
     #[test]
     fn extracts_ip_from_failed_password() {
         let line = "sshd[1234]: Failed password for root from 198.51.100.7 port 51422 ssh2";
-        assert_eq!(extract_offender(line), Some("198.51.100.7".parse().unwrap()));
+        assert_eq!(
+            extract_offender(line),
+            Some("198.51.100.7".parse().unwrap())
+        );
     }
 
     #[test]
@@ -112,7 +119,8 @@ mod tests {
 
     #[test]
     fn extracts_ip_from_preauth_disconnect() {
-        let line = "sshd[1234]: Connection closed by invalid user test 192.0.2.5 port 44000 [preauth]";
+        let line =
+            "sshd[1234]: Connection closed by invalid user test 192.0.2.5 port 44000 [preauth]";
         assert_eq!(extract_offender(line), Some("192.0.2.5".parse().unwrap()));
     }
 
@@ -130,7 +138,8 @@ mod tests {
 
     #[test]
     fn matches_real_preauth_disconnect_line() {
-        let line = "Connection closed by invalid user nonexistentuser123 127.0.0.1 port 51164 [preauth]";
+        let line =
+            "Connection closed by invalid user nonexistentuser123 127.0.0.1 port 51164 [preauth]";
         assert_eq!(extract_offender(line), Some("127.0.0.1".parse().unwrap()));
     }
 
@@ -142,7 +151,14 @@ mod tests {
 
     #[test]
     fn loopback_and_private_ranges_never_bannable() {
-        for ip in ["127.0.0.1", "10.1.2.3", "172.16.5.5", "192.168.1.50", "169.254.1.1", "::1"] {
+        for ip in [
+            "127.0.0.1",
+            "10.1.2.3",
+            "172.16.5.5",
+            "192.168.1.50",
+            "169.254.1.1",
+            "::1",
+        ] {
             let ip: IpAddr = ip.parse().unwrap();
             assert!(is_never_bannable(&ip), "{ip} should be protected");
         }
