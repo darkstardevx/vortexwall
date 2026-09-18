@@ -404,6 +404,7 @@
         </button>
       </div>
     </div>
+    <p style="text-align:center;font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);margin-top:14px;" id="vw-dl-count">&hellip;</p>
     <div class="install-more">
       <a href="https://github.com/darkstardevx/vortexwall#-running" target="_blank" rel="noopener">More install options &amp; manual builds →</a>
     </div>
@@ -442,4 +443,14 @@
     }).catch(() => {});
   }
   try { if (/Mac OS X|Macintosh/.test(navigator.userAgent)) vwSetOs('macos'); } catch (e) {}
+
+  fetch('https://api.github.com/repos/darkstardevx/vortexwall/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(rel => {
+      const dl = (rel.assets || [])
+        .filter(a => !a.name.endsWith('.sha256'))
+        .reduce((sum, a) => sum + (a.download_count || 0), 0);
+      document.getElementById('vw-dl-count').textContent = dl.toLocaleString() + ' downloads (' + rel.tag_name + ')';
+    })
+    .catch(() => { document.getElementById('vw-dl-count').textContent = ''; });
 </script>
