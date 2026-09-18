@@ -1,0 +1,445 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VortexWall — Active-blackholing firewall</title>
+<meta name="description" content="Active-blackholing firewall. Bad behavior crosses the threshold. The network forgets the source.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICAKICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZmF2dm9pZCIgY3g9IjUwJSIgY3k9IjUwJSIgcj0iNTUlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMDAwMDAwIi8+PHN0b3Agb2Zmc2V0PSIwLjUiIHN0b3AtY29sb3I9IiMwMDAwMDAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDMwMzA4IiBzdG9wLW9wYWNpdHk9IjAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImZhdmNvcmUiIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjUwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI0ZGMkU4OCIgc3RvcC1vcGFjaXR5PSIwLjY1Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRkYyRTg4IiBzdG9wLW9wYWNpdHk9IjAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJmYXZnbG93U29mdCIgeD0iLTYwJSIgeT0iLTYwJSIgd2lkdGg9IjIyMCUiIGhlaWdodD0iMjIwJSI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iNSIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZmF2Z2xvd1RpZ2h0IiB4PSItNzAlIiB5PSItNzAlIiB3aWR0aD0iMjQwJSIgaGVpZ2h0PSIyNDAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzLjIiIHJlc3VsdD0iYiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZSBpbj0iYiIvPjxmZU1lcmdlTm9kZSBpbj0iU291cmNlR3JhcGhpYyIvPjwvZmVNZXJnZT48L2ZpbHRlcj4KICAgIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjMDMwMzA4Ii8+CiAgCiAgICA8cGF0aCBkPSJNNjQgMzAgYTI0IDI0IDAgMSAxIC0xNi44IDQxIiBmaWxsPSJub25lIiBzdHJva2U9IiMyMTM4RDYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1IiBmaWxsPSIjRkYyRTg4Ii8+CiAgICAKPC9zdmc+">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --void: #030308;
+    --panel: 8, 8, 13;
+    --graphite: #15151E;
+    --steel: #3A3A48;
+    --steel-line: #2a2a36;
+    --indigo: #2138D6;
+    --indigo-bright: #5C6BFF;
+    --hotpink: #FF2E88;
+    --white: #F5F7FF;
+    --muted: #8D8DA3;
+    --r: 6px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  ::selection { background: rgba(255,46,136,.28); color: #fff; }
+
+  body {
+    margin: 0;
+    background: var(--void);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(58,58,72,.05) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(90deg, rgba(58,58,72,.035) 0 1px, transparent 1px 78px);
+    color: #D6DAE6;
+    font-family: 'Chakra Petch', 'Segoe UI', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { max-width: 100%; }
+  a { color: inherit; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding-inline: 24px; }
+  code, .mono { font-family: 'Space Mono', ui-monospace, monospace; }
+
+  h1, h2, h3 { font-family: 'Chakra Petch', sans-serif; color: var(--white); margin: 0; font-weight: 700; text-wrap: balance; }
+  p { margin: 0; }
+
+  /* ---------- ambient vortex ring decoration ---------- */
+  .vortex-decor {
+    position: fixed; top: -180px; right: -180px; width: 620px; height: 620px;
+    pointer-events: none; z-index: 0; opacity: 0.5;
+  }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 40;
+    backdrop-filter: blur(12px);
+    background: rgba(3,3,8,.78);
+    border-bottom: 1px solid var(--steel-line);
+  }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .brand svg { width: 26px; height: 26px; }
+  .brand span { font-weight: 700; color: var(--white); font-size: 17px; letter-spacing: .01em; }
+  .navlinks { display: flex; align-items: center; gap: 22px; }
+  .navlinks a.navlink { font-size: 13.5px; color: var(--muted); text-decoration: none; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+  .navlinks a.navlink:hover { color: var(--white); }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 20px;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    font-family: 'Chakra Petch', sans-serif; font-weight: 600; font-size: 14.5px; text-transform: uppercase; letter-spacing: .03em;
+    text-decoration: none; cursor: pointer; border: 1px solid transparent;
+  }
+  .btn-primary { background: rgba(33,56,214,.24); border-color: var(--indigo-bright); color: #fff; }
+  .btn-primary:hover { background: rgba(33,56,214,.38); }
+  .btn-ghost { background: rgba(255,255,255,.03); border-color: var(--steel); color: #D6DAE6; }
+  .btn-ghost:hover { border-color: #55556a; background: rgba(255,255,255,.06); }
+
+  /* ---------- chamfered tag/pill ---------- */
+  .tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+    background: rgba(58,58,72,.22); border: 1px solid var(--steel); color: #B9BECC;
+    white-space: nowrap;
+  }
+  .tag.indigo { background: rgba(33,56,214,.14); border-color: var(--indigo-bright); color: #AEB7FF; }
+  .tag.pink { background: rgba(255,46,136,.1); border-color: var(--hotpink); color: #FFA9CB; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* ---------- bulkhead plate (chrome replacing terminal/window pattern) ---------- */
+  .plate {
+    position: relative;
+    border-radius: var(--r);
+    border: 1px solid var(--steel);
+    background: linear-gradient(165deg, rgba(21,21,30,.9), rgba(8,8,13,.92));
+    box-shadow: 0 26px 60px -34px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  .plate::before, .plate::after, .plate .rivet-tl, .plate .rivet-tr, .plate .rivet-bl, .plate .rivet-br { content: ""; }
+  .rivet { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #4a4a5c; box-shadow: inset 0 -1px 0 rgba(0,0,0,.5), 0 0.5px 0 rgba(255,255,255,.15); }
+  .rivet.tl { top: 8px; left: 8px; } .rivet.tr { top: 8px; right: 8px; }
+  .rivet.bl { bottom: 8px; left: 8px; } .rivet.br { bottom: 8px; right: 8px; }
+  .plate-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px; border-bottom: 1px solid var(--steel-line);
+    background: rgba(0,0,0,.18);
+  }
+  .plate-id { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .hazard { width: 9px; height: 9px; background: var(--indigo-bright); transform: rotate(45deg); flex-shrink: 0; box-shadow: 0 0 8px 1px rgba(92,107,255,.7); }
+  .hazard.pink { background: var(--hotpink); box-shadow: 0 0 8px 1px rgba(255,46,136,.7); }
+  .plate-label { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .05em; color: var(--muted); text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plate-status { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; flex-shrink: 0; }
+  .plate-body { padding: 20px 22px; }
+  .plate-body pre { margin: 0; font-family: 'Space Mono', monospace; font-size: 12.4px; line-height: 1.85; color: #C9CEDA; white-space: pre-wrap; overflow-x: auto; }
+  .plate .t-muted { color: var(--muted); }
+  .plate .t-indigo { color: #8B95FF; }
+  .plate .t-pink { color: #FF6FAE; }
+  .plate .t-white { color: var(--white); font-weight: 700; }
+  .plate .t-dim { color: #454555; }
+
+  /* ---------- rivet-seam section divider ---------- */
+  .seam { display: flex; align-items: center; gap: 8px; padding: 54px 0 0; }
+  .seam .line { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--steel) 0 6px, transparent 6px 16px); }
+  .seam .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--steel); }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 60px 0 20px; position: relative; z-index: 1; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; }
+  .eyebrow { margin-bottom: 18px; }
+  .hero h1 { font-size: 46px; line-height: 1.12; margin-bottom: 16px; }
+  .hero h1 .accent { color: var(--indigo-bright); }
+  .hero-sub { font-size: 16px; color: var(--muted); max-width: 48ch; margin-bottom: 24px; line-height: 1.65; }
+  .hero-ctas { display: flex; gap: 12px; margin-bottom: 26px; flex-wrap: wrap; }
+
+  /* ---------- feature sections ---------- */
+  section.feature { padding: 46px 0 8px; position: relative; z-index: 1; }
+  .feature-grid { display: grid; grid-template-columns: .84fr 1.16fr; gap: 50px; align-items: center; }
+  .feature-grid.rev { grid-template-columns: 1.16fr .84fr; }
+  .feature-grid.rev .f-copy { order: 2; } .feature-grid.rev .f-vis { order: 1; }
+  .f-kicker { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--hotpink); margin-bottom: 10px; }
+  .f-copy h2 { font-size: 25px; margin-bottom: 12px; }
+  .f-copy p { color: #A9AFC0; font-size: 14.8px; margin-bottom: 10px; }
+  .f-copy p:last-child { margin-bottom: 0; }
+  .f-copy strong { color: var(--white); font-weight: 700; }
+
+  /* priority-chain diagram */
+  .chain { display: flex; flex-direction: column; gap: 10px; }
+  .chain .step { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 4px; background: rgba(255,255,255,.02); border: 1px solid var(--steel-line); }
+  .chain .step.hot { border-color: var(--hotpink); background: rgba(255,46,136,.06); }
+  .chain .num { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); width: 20px; flex-shrink: 0; }
+  .chain .desc { flex: 1; font-size: 13.5px; }
+  .chain .desc b { color: var(--white); }
+  .chain .tag-sm { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); flex-shrink: 0; }
+  .chain .arrow { text-align: center; color: var(--steel); font-size: 12px; }
+
+  /* roadmap plate */
+  .roadmap-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13.5px; }
+  .roadmap-row .box { width: 14px; height: 14px; border: 1.5px solid var(--steel); border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .roadmap-row.done .box { background: rgba(92,107,255,.18); border-color: var(--indigo-bright); }
+  .roadmap-row.done .box::after { content: "✓"; font-size: 9px; color: var(--indigo-bright); }
+  .roadmap-row.todo span { color: var(--muted); }
+
+  /* ---------- install ---------- */
+  .install { padding: 64px 0 56px; position: relative; z-index: 1; }
+  .install-head { text-align: center; max-width: 560px; margin: 0 auto 28px; }
+  .install-head h2 { font-size: 28px; margin-bottom: 10px; }
+  .install-head p { color: var(--muted); font-size: 14.5px; }
+  .install-card { max-width: 640px; margin: 0 auto; }
+  .os-tabs { display: flex; gap: 6px; padding: 12px 14px 0; }
+  .os-tab {
+    padding: 7px 15px; clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+    font-family: 'Space Mono', monospace; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--muted); background: transparent; border: 1px solid transparent; cursor: pointer;
+  }
+  .os-tab.active { background: rgba(33,56,214,.16); border-color: var(--indigo-bright); color: #fff; }
+  .cmd-row {
+    display: flex; align-items: center; gap: 10px; margin: 14px 18px 18px; padding: 12px 8px 12px 16px;
+    background: rgba(0,0,0,.3); border: 1px solid var(--steel-line); border-radius: 4px;
+  }
+  .cmd-row .prompt { color: var(--hotpink); font-family: 'Space Mono', monospace; font-size: 13px; flex-shrink: 0; }
+  .cmd-row code { flex: 1; font-size: 12.6px; color: #D6DAE6; overflow-x: auto; white-space: nowrap; }
+  .copy-btn {
+    flex-shrink: 0; width: 32px; height: 32px; border-radius: 4px; border: 1px solid var(--steel-line);
+    background: rgba(255,255,255,.03); color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .copy-btn:hover { border-color: var(--steel); color: #fff; }
+  .copy-btn.copied { color: var(--indigo-bright); border-color: var(--indigo-bright); }
+  .install-more { text-align: center; margin-top: 16px; }
+  .install-more a { font-size: 12.5px; color: var(--muted); text-decoration: none; border-bottom: 1px dotted var(--steel); }
+  .install-more a:hover { color: var(--indigo-bright); border-color: var(--indigo-bright); }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--steel-line); padding: 30px 0 42px; position: relative; z-index: 1; }
+  .foot-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+  .foot-brand { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--muted); }
+  .foot-brand svg { width: 18px; height: 18px; }
+  .foot-links { display: flex; gap: 18px; }
+  .foot-links a { font-size: 12.5px; color: var(--muted); text-decoration: none; font-weight: 500; text-transform: uppercase; letter-spacing: .03em; }
+  .foot-links a:hover { color: #fff; }
+  .foot-family { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .07em; color: #3a3a48; text-transform: uppercase; }
+
+  @media (max-width: 860px) {
+    .hero-grid, .feature-grid, .feature-grid.rev { grid-template-columns: 1fr; gap: 28px; }
+    .feature-grid.rev .f-copy, .feature-grid.rev .f-vis { order: initial; }
+    .hero h1 { font-size: 34px; }
+    .navlinks .navlink:not(.btn) { display: none; }
+    .vortex-decor { width: 380px; height: 380px; top: -120px; right: -120px; }
+  }
+</style>
+
+<svg class="vortex-decor" viewBox="0 0 400 400"><circle cx="200" cy="200" r="190" fill="none" stroke="#2138D6" stroke-width="1" stroke-dasharray="2 12" opacity="0.5"/><circle cx="200" cy="200" r="150" fill="none" stroke="#2138D6" stroke-width="1" stroke-dasharray="1 8" opacity="0.4"/><circle cx="200" cy="200" r="110" fill="none" stroke="#FF2E88" stroke-width="1" stroke-dasharray="1 10" opacity="0.25"/></svg>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#">
+      <svg viewBox="0 0 60 60"><rect width="60" height="60" rx="10" fill="#08080D"/><path d="M30 14 a12 12 0 1 1 -8.4 20.5" fill="none" stroke="#2138D6" stroke-width="4" stroke-linecap="round"/><circle cx="30" cy="30" r="2.6" fill="#FF2E88"/></svg>
+      <span>VORTEXWALL</span>
+    </a>
+    <div class="navlinks">
+      <a class="navlink" href="#priority">Priority</a>
+      <a class="navlink" href="#install">Install</a>
+      <a class="navlink btn btn-ghost" style="padding:7px 15px;font-size:12.5px;" href="https://github.com/darkstardevx/vortexwall" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="tag-row eyebrow">
+        <span class="tag">Rust</span>
+        <span class="tag indigo">nftables</span>
+        <span class="tag">systemd</span>
+        <span class="tag">MIT</span>
+      </div>
+      <h1>Bad behavior crosses<br>the threshold. <span class="accent">The network<br>forgets the source.</span></h1>
+      <p class="hero-sub">Active-blackholing firewall. Tails auth logs, tracks per-IP failures in a sliding window, and drops the offender at the network level — before connection tracking even runs.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#install">Install VortexWall</a>
+        <a class="btn btn-ghost" href="https://github.com/darkstardevx/vortexwall" target="_blank" rel="noopener">View source</a>
+      </div>
+      <div class="tag-row">
+        <span class="tag pink">auto-expiring bans</span>
+        <span class="tag">private ranges unbannable</span>
+        <span class="tag">dry-run safe</span>
+      </div>
+    </div>
+
+    <div class="plate">
+      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
+      <div class="plate-bar">
+        <div class="plate-id"><span class="hazard pink"></span><span class="plate-label">journalctl -f -u sshd</span></div>
+        <div class="plate-status">live</div>
+      </div>
+      <div class="plate-body">
+        <pre><span class="t-dim">$</span> <span class="t-white">vortexwall</span>
+
+<span class="t-indigo">[nftables]</span> table ready (inet vortexwall)
+<span class="t-muted">[protected]</span> 192.168.1.50 had an auth failure but is
+  loopback/private — never a ban candidate
+<span class="t-pink">[BANNED]</span> 203.0.113.44 for 3600s (threshold 5 reached)
+<span class="t-pink">[BANNED]</span> 198.51.100.9 for 3600s (threshold 5 reached)
+<span class="t-dim">$</span> <span class="t-white">vortexwall --bans</span>
+203.0.113.44
+198.51.100.9</pre>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap"><div class="seam"><span class="dot"></span><div class="line"></div><span class="dot"></span></div></div>
+
+<section class="feature" id="priority">
+  <div class="wrap feature-grid">
+    <div class="f-copy">
+      <div class="f-kicker">Network priority</div>
+      <h2>Dropped before it's even<br>connection-tracked.</h2>
+      <p>This box's <code>iptables</code> is already the <code>nf_tables</code> kernel backend, so <code>ufw</code>'s rules and VortexWall's rules both run through nftables — as two independent tables, evaluated by hook priority.</p>
+      <p>VortexWall's <strong>prerouting chain runs at priority -300</strong> — the raw tier — ahead of <code>ufw</code>'s filter-tier rules. A banned IP never reaches connection tracking at all.</p>
+    </div>
+    <div class="f-vis">
+      <div class="chain">
+        <div class="step hot"><span class="num">01</span><span class="desc"><b>vortexwall</b> — prerouting, raw tier</span><span class="tag-sm">priority -300</span></div>
+        <div class="arrow">▾ dropped here, never continues ▾</div>
+        <div class="step"><span class="num">02</span><span class="desc"><b>ufw</b> — filter tier, connection tracked</span><span class="tag-sm">priority 0</span></div>
+        <div class="step"><span class="num">03</span><span class="desc">application (sshd, etc.)</span><span class="tag-sm">userspace</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="seam"><span class="dot"></span><div class="line"></div><span class="dot"></span></div></div>
+
+<section class="feature">
+  <div class="wrap feature-grid rev">
+    <div class="f-copy">
+      <div class="f-kicker">Self-cleaning</div>
+      <h2>Auto-expiring bans,<br>no cleanup thread.</h2>
+      <p>Bans live in nftables' own set timeouts — the kernel expires them, not VortexWall. <strong>No cleanup thread, no orphaned rules</strong> if the daemon crashes or is killed mid-run.</p>
+      <p>A sliding window tracks per-IP failures (<code>threshold</code> within <code>window_secs</code>), not a raw lifetime count — so a handful of failures years apart never adds up to a ban.</p>
+    </div>
+    <div class="f-vis plate">
+      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
+      <div class="plate-bar">
+        <div class="plate-id"><span class="hazard"></span><span class="plate-label">config.toml</span></div>
+        <div class="plate-status">config</div>
+      </div>
+      <div class="plate-body">
+        <pre><span class="t-indigo">threshold</span>    = <span class="t-white">5</span>      <span class="t-muted"># failures before a ban</span>
+<span class="t-indigo">window_secs</span>  = <span class="t-white">600</span>    <span class="t-muted"># sliding window</span>
+<span class="t-indigo">ban_secs</span>     = <span class="t-white">3600</span>   <span class="t-muted"># nftables auto-expires it</span>
+<span class="t-indigo">allowlist</span>    = <span class="t-white">[]</span>
+
+<span class="t-dim">[[watch]]</span>
+<span class="t-indigo">service</span> = <span class="t-white">"sshd"</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="seam"><span class="dot"></span><div class="line"></div><span class="dot"></span></div></div>
+
+<section class="feature">
+  <div class="wrap feature-grid">
+    <div class="f-copy">
+      <div class="f-kicker">Guardrails</div>
+      <h2>Some things are never<br>bannable. Hardcoded.</h2>
+      <p>Loopback and every private range (RFC1918 + link-local + IPv6 ULA) are <strong>hardcoded-unbannable</strong>, regardless of config. Can't be overridden. Can't accidentally lock out a LAN you're on.</p>
+      <p><code>--dry-run</code> runs the full detection pipeline with zero nftables writes and zero root required — validate against real traffic with no risk before trusting it.</p>
+    </div>
+    <div class="f-vis plate">
+      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
+      <div class="plate-bar">
+        <div class="plate-id"><span class="hazard"></span><span class="plate-label">vortexwall --test-ban</span></div>
+        <div class="plate-status">live</div>
+      </div>
+      <div class="plate-body">
+        <pre><span class="t-dim">$</span> <span class="t-white">vortexwall --test-ban 192.168.1.12</span>
+<span class="t-pink">[test-ban]</span> refusing — 192.168.1.12 is loopback or
+  a private range, never bannable
+
+<span class="t-dim">$</span> <span class="t-white">vortexwall --test-ban 203.0.113.9</span>
+<span class="t-indigo">[test-ban]</span> 203.0.113.9 banned for 60s
+  check with --bans, or nft list set inet vortexwall blackhole</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="seam"><span class="dot"></span><div class="line"></div><span class="dot"></span></div></div>
+
+<section class="feature">
+  <div class="wrap feature-grid rev">
+    <div class="f-copy">
+      <div class="f-kicker">Reversible</div>
+      <h2>One command,<br>fully gone.</h2>
+      <p>Explicitly a learning project ahead of setting up <code>fail2ban</code> for real. <code>--teardown</code> removes the entire nftables table — every rule, every ban — immediately. No manual nftables cleanup, ever.</p>
+      <p>Roadmap so far:</p>
+      <div class="roadmap-row done"><span class="box"></span><span>sshd log watching, sliding-window bans, auto-expiry</span></div>
+      <div class="roadmap-row done"><span class="box"></span><span>Hardcoded private-range protection</span></div>
+      <div class="roadmap-row done"><span class="box"></span><span><code>--dry-run</code> for zero-risk validation</span></div>
+      <div class="roadmap-row todo"><span class="box"></span><span>CIDR ranges in allowlist</span></div>
+      <div class="roadmap-row todo"><span class="box"></span><span>Watch services beyond sshd</span></div>
+    </div>
+    <div class="f-vis plate">
+      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
+      <div class="plate-bar">
+        <div class="plate-id"><span class="hazard pink"></span><span class="plate-label">vortexwall --teardown</span></div>
+        <div class="plate-status">live</div>
+      </div>
+      <div class="plate-body">
+        <pre><span class="t-dim">$</span> <span class="t-white">sudo vortexwall --teardown</span>
+<span class="t-pink">[teardown]</span> inet vortexwall table removed —
+  every rule and ban is gone
+
+<span class="t-dim">$</span> <span class="t-white">sudo systemctl disable --now vortexwall</span>
+<span class="t-dim">$</span> <span class="t-white">sudo rm /etc/systemd/system/vortexwall.service</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="install" id="install">
+  <div class="wrap">
+    <div class="install-head">
+      <h2>Get VortexWall running</h2>
+      <p>One command — downloads, verifies the checksum, installs to <code>~/.local/bin</code>.</p>
+    </div>
+    <div class="plate install-card">
+      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
+      <div class="os-tabs" role="tablist">
+        <button class="os-tab active" data-os="linux" onclick="vwSetOs('linux')">Linux</button>
+        <button class="os-tab" data-os="macos" onclick="vwSetOs('macos')">macOS</button>
+      </div>
+      <div class="cmd-row">
+        <span class="prompt">&gt;_</span>
+        <code id="vw-cmd" class="mono">curl -fsSL https://raw.githubusercontent.com/darkstardevx/vortexwall/main/install.sh | sh</code>
+        <button class="copy-btn" onclick="vwCopy(this)" aria-label="Copy command">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="install-more">
+      <a href="https://github.com/darkstardevx/vortexwall#-running" target="_blank" rel="noopener">More install options &amp; manual builds →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-row">
+    <div class="foot-brand">
+      <svg viewBox="0 0 60 60"><rect width="60" height="60" rx="10" fill="#08080D"/><path d="M30 14 a12 12 0 1 1 -8.4 20.5" fill="none" stroke="#2138D6" stroke-width="4" stroke-linecap="round"/><circle cx="30" cy="30" r="2.6" fill="#FF2E88"/></svg>
+      <span>VortexWall · MIT licensed</span>
+    </div>
+    <div class="foot-links">
+      <a href="https://github.com/darkstardevx/vortexwall" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/darkstardevx/vortexwall/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="#install">Install</a>
+    </div>
+    <div class="foot-family">Cybercore family</div>
+  </div>
+</footer>
+
+<script>
+  const CMDS = {
+    linux: 'curl -fsSL https://raw.githubusercontent.com/darkstardevx/vortexwall/main/install.sh | sh',
+    macos: 'curl -fsSL https://raw.githubusercontent.com/darkstardevx/vortexwall/main/install.sh | sh'
+  };
+  function vwSetOs(os) {
+    document.querySelectorAll('.os-tab').forEach(t => t.classList.toggle('active', t.dataset.os === os));
+    document.getElementById('vw-cmd').textContent = CMDS[os];
+  }
+  function vwCopy(btn) {
+    const text = document.getElementById('vw-cmd').textContent;
+    navigator.clipboard?.writeText(text).then(() => {
+      btn.classList.add('copied');
+      setTimeout(() => btn.classList.remove('copied'), 1400);
+    }).catch(() => {});
+  }
+  try { if (/Mac OS X|Macintosh/.test(navigator.userAgent)) vwSetOs('macos'); } catch (e) {}
+</script>
