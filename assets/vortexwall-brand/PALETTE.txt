@@ -1,0 +1,15 @@
+VortexWall Brick Breach Palette
+
+Void         #030308
+Graphite     #15151E
+Steel        #3A3A48
+Steel Line   #2a2a36
+Deep Blue    #2138D6   (the vortex — deep indigo, not bright cyan)
+Indigo Bright #5C6BFF  (vortex rim highlight)
+Hot Pink     #FF2E88   (the core / active-drop accent)
+White        #F5F7FF
+Muted        #8D8DA3
+
+Fonts: Chakra Petch (headings) + Space Mono (data/labels), both embedded
+as base64 woff2 in every text-bearing SVG (badge, hero, logo-horizontal,
+social-card) so they render correctly without relying on system fonts.

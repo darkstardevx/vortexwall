@@ -1,4 +1,9 @@
-# 🌀 VortexWall
+<p align="center">
+  <img src="assets/vortexwall-brand/vortexwall-hero.svg" alt="VortexWall — bad behavior crosses the threshold, the network forgets the source" width="820">
+</p>
+
+[![CI](https://github.com/darkstardevx/vortexwall/actions/workflows/ci.yml/badge.svg)](https://github.com/darkstardevx/vortexwall/actions/workflows/ci.yml)
+[![Release](https://github.com/darkstardevx/vortexwall/actions/workflows/release.yml/badge.svg)](https://github.com/darkstardevx/vortexwall/actions/workflows/release.yml)
 
 `Rust` · `nftables` · `systemd`
 
@@ -7,6 +12,16 @@ a sliding window, and drops the offender at the network level — before
 connection tracking even runs — once a threshold is crossed. Not a
 replacement for a real firewall (`ufw` handles that baseline); this is the
 "actively respond to bad behavior" layer on top of it.
+
+## 📦 Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/darkstardevx/vortexwall/main/install.sh | sh
+```
+
+Downloads the latest release for your platform (Linux or macOS, x86_64
+or aarch64), verifies its SHA-256 checksum, and installs `vortexwall`
+to `~/.local/bin`. Or build from source with `cargo build --release`.
 
 ## 🚀 What it does
 

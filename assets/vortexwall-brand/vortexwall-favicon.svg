@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  
+  <defs>
+    <radialGradient id="favvoid" cx="50%" cy="50%" r="55%">
+      <stop offset="0" stop-color="#000000"/><stop offset="0.5" stop-color="#000000"/>
+      <stop offset="1" stop-color="#030308" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="favcore" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FF2E88" stop-opacity="0.65"/><stop offset="1" stop-color="#FF2E88" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="favglowSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="favglowTight" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+  <rect width="128" height="128" rx="28" fill="#030308"/>
+  
+    <path d="M64 30 a24 24 0 1 1 -16.8 41" fill="none" stroke="#2138D6" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="64" cy="64" r="5" fill="#FF2E88"/>
+    
+</svg>
